@@ -8,7 +8,7 @@ This repository contains a standalone CASA/Python script for stacking local VLAS
 Main script:
 
 ```bash
-vlass_fullmap_stack_standalone_v5.py
+vlass_fullmap_stack_standalone.py
 ```
 
 The script performs CASA-style image preparation and stacking:
@@ -45,14 +45,14 @@ matplotlib
 Example CASA command:
 
 ```bash
-casa --nologger -c vlass_fullmap_stack_standalone_v5.py [options]
+casa --nologger -c vlass_fullmap_stack_standalone.py [options]
 ```
 
 On NRAO Lustre, use the full CASA path if needed:
 
 ```bash
 /lustre/aoc/projects/vlass/vparekh/CASA/casa-6.7.1-12-py3.10.el8/bin/casa --nologger \
-  -c vlass_fullmap_stack_standalone_v5.py [options]
+  -c vlass_fullmap_stack_standalone.py [options]
 ```
 
 ---
@@ -346,7 +346,7 @@ Run:
 ```bash
 cd ~/VLASS_script/non_standard/image_combined/test
 
-casa --nologger -c /path/to/vlass_fullmap_stack_standalone_v5.py \
+casa --nologger -c /path/to/vlass_fullmap_stack_standalone.py \
   --input-dir . \
   --survey SE \
   --product alpha \
@@ -386,7 +386,7 @@ Use `--make-radio-beam-median` to also produce the common/radio-beam weighted me
 ```bash
 cd ~/VLASS_script/non_standard/image_combined/test
 
-casa --nologger -c /path/to/vlass_fullmap_stack_standalone_v5.py \
+casa --nologger -c /path/to/vlass_fullmap_stack_standalone.py \
   --input-dir . \
   --survey SE \
   --product alpha \
@@ -416,7 +416,7 @@ Use this if you only want to combine `tt0` intensity maps:
 ```bash
 cd ~/VLASS_script/non_standard/image_combined/test
 
-casa --nologger -c /path/to/vlass_fullmap_stack_standalone_v5.py \
+casa --nologger -c /path/to/vlass_fullmap_stack_standalone.py \
   --input-dir . \
   --survey SE \
   --product intensity \
@@ -439,7 +439,7 @@ Use this only if you want to combine existing alpha maps directly:
 ```bash
 cd ~/VLASS_script/non_standard/image_combined/test
 
-casa --nologger -c /path/to/vlass_fullmap_stack_standalone_v5.py \
+casa --nologger -c /path/to/vlass_fullmap_stack_standalone.py \
   --input-dir . \
   --survey SE \
   --product alpha \
@@ -470,7 +470,7 @@ This scans the NRAO `/stash` SE directory structure:
 
 ```bash
 /lustre/aoc/projects/vlass/vparekh/CASA/casa-6.7.1-12-py3.10.el8/bin/casa --nologger \
-  -c vlass_fullmap_stack_standalone_v5.py \
+  -c vlass_fullmap_stack_standalone.py \
   --survey SE \
   --product intensity \
   --epochs 2.1,3.1 \
@@ -487,7 +487,7 @@ By default, this uses archive RMS maps if available.
 
 ```bash
 /lustre/aoc/projects/vlass/vparekh/CASA/casa-6.7.1-12-py3.10.el8/bin/casa --nologger \
-  -c vlass_fullmap_stack_standalone_v5.py \
+  -c vlass_fullmap_stack_standalone.py \
   --survey SE \
   --product intensity \
   --epochs 2.1,3.1 \
@@ -506,7 +506,7 @@ This is the default alpha method:
 
 ```bash
 /lustre/aoc/projects/vlass/vparekh/CASA/casa-6.7.1-12-py3.10.el8/bin/casa --nologger \
-  -c vlass_fullmap_stack_standalone_v5.py \
+  -c vlass_fullmap_stack_standalone.py \
   --survey SE \
   --product alpha \
   --epochs 2.1,3.1 \
@@ -542,7 +542,7 @@ Use this when archive RMS maps are missing or when you want RMS estimated from t
 
 ```bash
 /lustre/aoc/projects/vlass/vparekh/CASA/casa-6.7.1-12-py3.10.el8/bin/casa --nologger \
-  -c vlass_fullmap_stack_standalone_v5.py \
+  -c vlass_fullmap_stack_standalone.py \
   --survey SE \
   --product alpha \
   --epochs 2.1,3.1 \
@@ -562,7 +562,7 @@ Use this if you want to keep the older method and combine existing alpha maps di
 
 ```bash
 /lustre/aoc/projects/vlass/vparekh/CASA/casa-6.7.1-12-py3.10.el8/bin/casa --nologger \
-  -c vlass_fullmap_stack_standalone_v5.py \
+  -c vlass_fullmap_stack_standalone.py \
   --survey SE \
   --product alpha \
   --spx-rms-weighted \
@@ -578,7 +578,7 @@ Use this if you want to keep the older method and combine existing alpha maps di
 
 ```bash
 /lustre/aoc/projects/vlass/vparekh/CASA/casa-6.7.1-12-py3.10.el8/bin/casa --nologger \
-  -c vlass_fullmap_stack_standalone_v5.py \
+  -c vlass_fullmap_stack_standalone.py \
   --survey SE \
   --product both \
   --epochs 2.1,3.1 \
@@ -597,7 +597,7 @@ Use this if you want to keep the older method and combine existing alpha maps di
 Use `--dry-run` to check what will be stacked without running CASA image operations:
 
 ```bash
-casa --nologger -c vlass_fullmap_stack_standalone_v5.py \
+casa --nologger -c vlass_fullmap_stack_standalone.py \
   --survey SE \
   --product alpha \
   --epochs 2.1,3.1 \
@@ -611,7 +611,7 @@ casa --nologger -c vlass_fullmap_stack_standalone_v5.py \
 ## 12. Limit number of fields for testing
 
 ```bash
-casa --nologger -c vlass_fullmap_stack_standalone_v5.py \
+casa --nologger -c vlass_fullmap_stack_standalone.py \
   --survey SE \
   --product intensity \
   --epochs 2.1,3.1 \
@@ -627,7 +627,7 @@ casa --nologger -c vlass_fullmap_stack_standalone_v5.py \
 If `--tiles` is not supplied, `--num-tiers` controls how many tier prefixes to scan:
 
 ```bash
-casa --nologger -c vlass_fullmap_stack_standalone_v5.py \
+casa --nologger -c vlass_fullmap_stack_standalone.py \
   --survey SE \
   --product intensity \
   --epochs 2.1,3.1 \
@@ -643,7 +643,7 @@ casa --nologger -c vlass_fullmap_stack_standalone_v5.py \
 Useful for debugging intermediate CASA images:
 
 ```bash
-casa --nologger -c vlass_fullmap_stack_standalone_v5.py \
+casa --nologger -c vlass_fullmap_stack_standalone.py \
   --input-dir . \
   --survey SE \
   --product alpha \
@@ -661,7 +661,7 @@ casa --nologger -c vlass_fullmap_stack_standalone_v5.py \
 ## 15. Add a custom output filename prefix
 
 ```bash
-casa --nologger -c vlass_fullmap_stack_standalone_v5.py \
+casa --nologger -c vlass_fullmap_stack_standalone.py \
   --input-dir . \
   --survey SE \
   --product alpha \
@@ -681,7 +681,7 @@ casa --nologger -c vlass_fullmap_stack_standalone_v5.py \
 QL supports intensity stacking only. Alpha is skipped for QL because standard QL directories do not contain alpha maps.
 
 ```bash
-casa --nologger -c vlass_fullmap_stack_standalone_v5.py \
+casa --nologger -c vlass_fullmap_stack_standalone.py \
   --survey QL \
   --product intensity \
   --epochs 1.2,2.2,3.2 \
@@ -695,7 +695,7 @@ casa --nologger -c vlass_fullmap_stack_standalone_v5.py \
 ## 17. QL intensity with local RMS
 
 ```bash
-casa --nologger -c vlass_fullmap_stack_standalone_v5.py \
+casa --nologger -c vlass_fullmap_stack_standalone.py \
   --survey QL \
   --product intensity \
   --epochs 1.2,2.2,3.2 \
@@ -746,7 +746,7 @@ casa --nologger -c vlass_fullmap_stack_standalone_v5.py \
 ## Check local discovery only
 
 ```bash
-casa --nologger -c vlass_fullmap_stack_standalone_v5.py \
+casa --nologger -c vlass_fullmap_stack_standalone.py \
   --input-dir . \
   --survey SE \
   --product alpha \
@@ -767,7 +767,7 @@ DRYRUN SE alpha T08t02 J004201-093000.06.2048: VLASS2.1,VLASS3.1
 ## Run the local alpha test
 
 ```bash
-casa --nologger -c vlass_fullmap_stack_standalone_v5.py \
+casa --nologger -c vlass_fullmap_stack_standalone.py \
   --input-dir . \
   --survey SE \
   --product alpha \
