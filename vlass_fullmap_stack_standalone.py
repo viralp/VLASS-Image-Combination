@@ -918,9 +918,29 @@ def brightest_pixel(data: np.ndarray) -> Tuple[int, int]:
     return int(y), int(x)
 
 
-def make_zoom_png(fits_path: Path, png_path: Path, cutout_size: int, title: str) -> None:
+def make_zoom_png(fits_path: Path, png_path: Path, cutout_size: int, title: str, center_yx: Optional[Tuple[int, int]] = None, center_sky=None) -> None:
     data, hdr = read_fits_2d(fits_path)
-    y0, x0 = brightest_pixel(data)
+    if center_sky is not None:
+        try:
+            w0 = WCS(hdr).celestial
+            xw, yw = w0.world_to_pixel(center_sky)
+            if np.isfinite(xw) and np.isfinite(yw):
+                y0, x0 = int(round(float(yw))), int(round(float(xw)))
+            elif center_yx is not None:
+                y0, x0 = int(center_yx[0]), int(center_yx[1])
+            else:
+                y0, x0 = brightest_pixel(data)
+        except Exception:
+            if center_yx is not None:
+                y0, x0 = int(center_yx[0]), int(center_yx[1])
+            else:
+                y0, x0 = brightest_pixel(data)
+    elif center_yx is None:
+        y0, x0 = brightest_pixel(data)
+    else:
+        y0, x0 = int(center_yx[0]), int(center_yx[1])
+    y0 = max(0, min(y0, data.shape[0] - 1))
+    x0 = max(0, min(x0, data.shape[1] - 1))
     half = max(1, int(cutout_size) // 2)
     y1 = max(0, y0 - half)
     y2 = min(data.shape[0], y0 + half)
@@ -1073,6 +1093,32 @@ def write_html_report(report_path: Path,
 
     input_rows = stats_table_rows(input_stats, report_path.parent)
 
+    def common_zoom_sky_center():
+        # Use one reference sky coordinate for every QA zoom card so input,
+        # combined, RMS, and delta previews show the same area of sky.
+        # Prefer the brightest finite pixel in the first input map.
+        try:
+            if input_stats:
+                ref_path = Path(str(input_stats[0].get("file", "")))
+                if ref_path.exists():
+                    data0, hdr0 = read_fits_2d(ref_path)
+                    y0, x0 = brightest_pixel(data0)
+                    return WCS(hdr0).celestial.pixel_to_world(float(x0), float(y0))
+        except Exception:
+            pass
+        try:
+            if combined_infos:
+                ref_path = Path(str(combined_infos[0].get("path", "")))
+                if ref_path.exists():
+                    data0, hdr0 = read_fits_2d(ref_path)
+                    y0, x0 = brightest_pixel(data0)
+                    return WCS(hdr0).celestial.pixel_to_world(float(x0), float(y0))
+        except Exception:
+            pass
+        return None
+
+    qa_center_sky = common_zoom_sky_center()
+
     def hide_noise_columns_for_combined(info: Dict[str, object]) -> bool:
         label = str(info.get("label", "")).lower()
         fname = Path(str(info.get("path", ""))).name.lower()
@@ -1083,6 +1129,10 @@ def write_html_report(report_path: Path,
     for info in combined_infos:
         st = info["stats"]
         png = Path(info["png"])
+        try:
+            make_zoom_png(Path(str(info["path"])), png, QA_CUTOUT_SIZE_PIX, str(info["label"]), center_sky=qa_center_sky)
+        except Exception:
+            pass
         cards.append(
             "<div class='card'>"
             f"<h3>{html.escape(str(info['label']))}</h3>"
@@ -1109,6 +1159,10 @@ def write_html_report(report_path: Path,
     input_cards = []
     for rec, st in zip(records, input_stats):
         png = qa_dir / (Path(str(st["file"])).stem + "_peakzoom.png")
+        try:
+            make_zoom_png(Path(str(st["file"])), png, QA_CUTOUT_SIZE_PIX, str(rec["epoch"]), center_sky=qa_center_sky)
+        except Exception:
+            pass
         input_cards.append(
             "<div class='card'>"
             f"<h3>{html.escape(str(rec['epoch']))} input</h3>"
@@ -1152,6 +1206,20 @@ def write_html_report(report_path: Path,
                     epoch = str(records[rec_idx].get("epoch", ""))
         return f"{kind} {stat}" + (f" − {epoch}" if epoch else f" {idx}")
 
+    def delta_preview_center(p0: Path) -> Optional[Tuple[int, int]]:
+        # For delta maps, show the same sky area as the matching combined map.
+        # The delta FITS itself is unchanged; this only controls the QA PNG zoom center.
+        stem = Path(p0).name.split("_minus_", 1)[0]
+        for info0 in combined_infos:
+            try:
+                cpath = Path(str(info0.get("path", "")))
+                if cpath.stem == stem and cpath.exists():
+                    cdat, _ = read_fits_2d(cpath)
+                    return brightest_pixel(cdat)
+            except Exception:
+                continue
+        return None
+
     def file_preview_cards(paths: Sequence[Path], subdir_name: str, title_prefix: str) -> str:
         preview_cards = []
         preview_dir = qa_dir / subdir_name
@@ -1163,7 +1231,7 @@ def write_html_report(report_path: Path,
             shown_name = p0.name if title_prefix == "Delta" else relpath(p0, report_path.parent)
             png = preview_dir / (p0.stem + "_peakzoom.png")
             try:
-                make_zoom_png(p0, png, QA_CUTOUT_SIZE_PIX, title)
+                make_zoom_png(p0, png, QA_CUTOUT_SIZE_PIX, title, center_sky=qa_center_sky)
                 preview_cards.append(
                     "<div class='card'>"
                     f"<h3>{html.escape(title)}</h3>"
@@ -1248,13 +1316,13 @@ th {{ background: #edf3fa; }}
 
 <div class="section">
 <h2>Peak zoom cutouts: input maps</h2>
-<p>WCS zooms centered on the brightest finite pixel.</p>
+<p>WCS zooms centered on the brightest pixel.</p>
 <div class="grid">{''.join(input_cards)}</div>
 </div>
 
 <div class="section">
 <h2>Peak zoom cutouts: combined maps</h2>
-<p>WCS zooms centered on the brightest finite pixel.</p>
+<p>WCS zooms centered on the brightest pixel.</p>
 <div class="grid">{''.join(cards)}</div>
 </div>
 
@@ -1265,7 +1333,7 @@ th {{ background: #edf3fa; }}
 
 <div class="section">
 <h2>Peak zoom cutouts: Delta images</h2>
-<p>Combined map minus each matched input map.</p>
+<p>Combined map minus each matched input map. Delta previews use the same zoom center as the matching combined product.</p>
 <div class="grid">{delta_cards}</div>
 </div>
 
